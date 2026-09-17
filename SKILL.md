@@ -35,7 +35,48 @@ description: >
 
 ---
 
-## 📋 用户连接后执行流程规范 (Execution Runbook)
+## 🤖 AI Agent 自动化集成与调用规范 (AI Agent Integration Runbook)
+
+### 1. 触发意图与意图识别 (Intent Recognition)
+当用户输入包含以下意图时，AI Agent 应自主激活并调用本 Skill：
+- **设备调优与提速**：“帮我优化这台安卓机”、“HyperOS/MIUI 用久了很卡”、“车机/电视盒子响应慢”。
+- **电池与续航**：“电池虚标怎么校准”、“如何释放被系统锁住的电池容量”、“优化后台耗电”。
+- **显示与音质**：“如何强制锁定全局 120Hz 高刷”、“提升蓝牙耳机/外放音质”、“微调音量阶梯”。
+- **系统恢复与回滚**：“还原之前的优化”、“恢复默认安卓设置”。
+
+### 2. AI Agent 决策状态机 (State Machine)
+AI Agent 在对话中必须维护以下状态转移，切勿跳步：
+
+```
+[DISCOVERY] ──> [INSPECT] ──> [SNAPSHOT (必须)] ──> [PLAN & CONFIRM] ──> [EXECUTE] ──> [REPORT & PROOF]
+      │                                                                               ▲
+      └────────────────────────── 用户回复【恢复默认】 ────────────────────────────────┘
+```
+
+### 3. Agent 与用户的交互输出模板
+
+#### A. 体检阶段输出：《全维设备体检报告卡》
+Agent 执行 `python scripts/device_inspector.py` 后，向用户输出结构化 Markdown 表格，包含：
+- **设备身份**：品牌、机型、SoC、Android 版本、ROM 定制层
+- **Root 与提权状态**：Non-Root (ADB) / Root (KernelSU/Magisk/APatch)
+- **电池 BMS 健康度**：设计容量、当前满充学得容量、健康度百分比、阻抗状态
+- **核心瓶颈预警**：例如“存在多余动画延迟”、“高刷策略存在黑名单降频”
+
+#### B. 确认阶段输出：《梯度优化方案建议书》
+Agent 必须向用户明确标示：
+- **A. 通用免 Root 稳健方案**（0 风险，0.75x 动效 + 全局高刷 + 进程墓碑 + AOT 预编译 + 存储 Trim）
+- **B. 极客 Root 专属方案**（BMS 阻抗重置 + 30 级音量平滑）
+- **安全承诺语**：“已为您生成初始快照 ID: `[SNAPSHOT_ID]`，后续随时输入【恢复默认】即可原样复原。”
+
+#### C. 回滚阶段：无条件逆向复原
+用户输入“恢复默认”、“回滚”、“还原”时，Agent 立即无缝调用：
+```bash
+python scripts/snapshot_engine.py --rollback
+```
+
+---
+
+## 📋 标准 6 步 SOP 执行工作流
 
 ### 第 1 步：连接与握手 (Connect)
 * 检查已有设备：`python scripts/adb_connector.py --devices`
@@ -43,9 +84,8 @@ description: >
 
 ### 第 2 步：非侵入体检与全网机型方案检索 (Inspect & Search)
 * 执行全维体检：`python scripts/device_inspector.py`
-* 采集芯片架构、BMS 物理电池数据（设计容量、当前满充容量、循环次数、健康度）；
-* 运行机型智能分析：`python scripts/model_intelligence.py`，根据机型代号检索成熟方案。
-* 向用户输出《全维设备体检报告卡》与《针对本机的成熟调优情报》。
+* 采集芯片架构、BMS 物理电池数据；
+* 运行机型智能分析：`python scripts/model_intelligence.py`。
 
 ### 第 3 步：防砖筑底与前置快照固化 (Snapshot)
 * 固化初始状态快照：`python scripts/snapshot_engine.py --create`

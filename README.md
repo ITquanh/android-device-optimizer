@@ -11,6 +11,54 @@
 
 ---
 
+## 🤖 AI Agent 使用与集成说明 (How AI Agents Use This Skill)
+
+本仓库原生作为 **AI Agent Skill** 设计，任何具备命令行调用与自主规划能力的 AI 编程助手或智能体平台均可开箱即用。
+
+### 1. 支持的 AI Agent 平台
+- **Google Antigravity / Gemini CLI**：原生识别 `SKILL.md`，放置于 skills 目录即可由 Agent 自动发现。
+- **Claude Code / Anthropic Desktop**：支持通过 Tool Use / Bash 工具链加载执行。
+- **Cursor / Windsurf / Cline (VS Code 扩展)**：作为工作区 Rules / Skills 挂载，直接在对话中触发。
+- **AutoGPT / CrewAI / LangChain / Dify**：可作为标准 Python 工具函数组 (Tool Functions) 无缝绑定。
+
+### 2. AI Agent 执行流与协同机制
+
+当人类向 AI Agent 表达调优或排查需求时，AI Agent 将按照内嵌的 **6 步 SOP 状态机** 自主调度脚本并提供安全保障：
+
+```
+  人类用户                  AI Agent (智能大脑)              Android 设备 (ADB / Root)
+     │                               │                                     │
+     │── 1. "帮我优化我的安卓手机" ──>│                                     │
+     │                               │── 2. 检测设备 & 六维全维体检 ───────>│
+     │                               │<── 返回硬件/BMS电池/SoC体检数据 ────│
+     │                               │                                     │
+     │                               │── 3. [必须] 强制生成初始状态快照 ────>│
+     │                               │<── 快照落盘，保存回滚基线凭证 ──────│
+     │                               │                                     │
+     │<── 4. 输出体检报告与调优建议 ─│                                     │
+     │── 5. 用户审阅并确认方案 ─────>│                                     │
+     │                               │── 6. 渐进式执行 (动效/高刷/AOT/BMS) ─>│
+     │                               │<── 调优生效确认 ────────────────────│
+     │                               │                                     │
+     │<── 7. 输出前后量化对比与 ─────│                                     │
+     │       100%可逆回滚承诺        │                                     │
+```
+
+### 3. AI Agent 推荐系统提示词 (System Prompt Injection)
+
+若您在自己的智能体应用中集成此 Skill，可将以下提示词加入 Agent 的 System Prompt 中：
+
+```markdown
+你是一名顶级的 Android 系统性能与底层架构调优专家，拥有 Android Device Optimizer 技能。
+当用户需要对 Android 手机、平板、电视盒子或车机进行提速、优化、发热排查、高刷强制或电池校准时：
+1. 始终执行【防变砖第一】原则，在执行任何写操作前必须调用 `python scripts/snapshot_engine.py --create` 固化快照。
+2. 优先采用免 Root 稳健通道；如果用户设备已 Root，在充分沟通风险后推荐进阶底层调优（如 BMS 阻抗清除、音量步进优化）。
+3. 严格遵守安全白名单，绝不允许杀死或禁用系统生命线关键进程（如 SystemUI, SettingsProvider）。
+4. 任何时候用户表示“恢复默认”或遇到异常，立即调用 `python scripts/snapshot_engine.py --rollback` 秒级还原。
+```
+
+---
+
 ## ✨ 核心特性
 
 - 🛡️ **防变砖绝对第一 (Zero-Risk Guarantee)**：执行任何变更前，自动通过 `snapshot_engine.py` 生成全量快照，任何时候输入回滚命令即可一键秒级 100% 逆向复原系统状态。
@@ -18,7 +66,7 @@
   - **免 Root 稳健通道 (Non-Root)**：通过标准有线 / 无线 ADB，安全修改系统属性、动效曲线、全局高刷、cgroup 进程墓碑、ART AOT 预编译与闪存修剪。
   - **极客 Root 通道 (KernelSU / Magisk / APatch)**：深入硬件底层，重置 BMS 阻抗学习记录释放虚标锁容、平滑 30 级音量阶梯、清除残留冲突模块。
 - 🔍 **机型智能指纹与社区方案检索 (Model Intelligence)**：自动提取 SoC 架构、代号指纹与系统版本，检索酷安与 XDA 针对特定机型的成熟调优参数。
-- 🤖 **AI Agent Skill 原生兼容**：自带标准 `SKILL.md`，可无缝接入 Claude、ChatGPT、Google Antigravity 等 AI 编程助手与自动化代理系统。
+- 🤖 **AI Agent 原生标准**：内嵌 `SKILL.md` 与执行 Runbook，赋能各类大模型智能体实现自主诊断、方案推荐与安全闭环。
 
 ---
 
@@ -27,7 +75,7 @@
 ```
 android-device-optimizer/
 ├── SKILL.md                     # AI Agent Skill 规则定义文件
-├── README.md                    # 项目完整说明文档
+├── README.md                    # 项目完整说明文档 (含 AI Agent 说明)
 ├── LICENSE                      # MIT 开源协议
 ├── requirements.txt             # 环境说明（无第三方重型依赖）
 ├── references/                  # 参考指南与应急规范
@@ -68,7 +116,7 @@ android-device-optimizer/
 
 ---
 
-## 🚀 快速上手
+## 🚀 快速上手 (人类开发者模式)
 
 ### 前置要求
 - Python 3.8+
@@ -84,7 +132,7 @@ python scripts/adb_connector.py --devices
 # 2. 执行设备全维体检
 python scripts/device_inspector.py
 
-# 3. 创建执行前初始快照
+# 3. 创建执行前初始快照 (最关键保障)
 python scripts/snapshot_engine.py --create
 
 # 4. 执行全套稳健调优（0.75x动效 / 全局高刷 / cgroup墓碑 / FSTRIM）

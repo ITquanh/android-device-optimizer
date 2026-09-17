@@ -1,0 +1,4 @@
+# Android Device Optimizer
+# Built purely with Python standard library and Android Debug Bridge (ADB).
+# No heavy third-party packages required.
+# Minimum Python version: 3.8+

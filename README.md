@@ -1,4 +1,4 @@
-# 🚀 Android Device Optimizer (安卓全场景全维调优中枢)
+# 🚀 Android Device Optimizer (安卓全场景优化器)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Android](https://img.shields.io/badge/Android-5.0%20~%2016%2B-green.svg)](https://www.android.com/)
